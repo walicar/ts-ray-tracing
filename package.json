@@ -6,10 +6,12 @@
   "scripts": {
     "build": "rsbuild build",
     "dev": "rsbuild dev --open",
-    "preview": "rsbuild preview"
+    "preview": "rsbuild preview",
+    "format": "prettier . --write"
   },
   "devDependencies": {
     "@rsbuild/core": "^1.4.2",
+    "prettier": "^3.6.2",
     "typescript": "^5.8.3"
   }
 }
