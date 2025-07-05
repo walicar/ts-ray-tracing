@@ -6,7 +6,7 @@ const root = document.querySelector("#root");
 // create ppm header
 const width = 256;
 const height = 256;
-let ppm = `P3\n${width} ${height}\n0255\n`;
+let ppm = `P3\n${width} ${height}\n255\n`;
 
 // create ppm image
 for (let row = 0; row < height; row++) {
