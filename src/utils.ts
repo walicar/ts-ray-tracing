@@ -60,14 +60,14 @@ export const writeColor = (color: vec3) => {
 
 // calculate upper left position of the viewport
 export const getUpperLeft = (focalLength: number, cameraCenter: vec3, viewportU: vec3, viewportV: vec3) => {
-  const focalVec = vec3.fromValues(0, 0, focalLength);
-  const halfViewportU = vec3.div(vec3.create(), viewportU, [2, 2, 2]);
-  const halfViewportV = vec3.div(vec3.create(), viewportV, [2, 2, 2]);
+  const focalVec = vec3.fromValues(0, 0, -focalLength);
+  const halfViewportU = vec3.scale(vec3.create(), viewportU, 0.5);
+  const halfViewportV = vec3.scale(vec3.create(), viewportV, 0.5);
 
   const result = vec3.create();
-  vec3.sub(result, halfViewportU, halfViewportV);
-  vec3.sub(result, focalVec, result);
-  vec3.sub(result, cameraCenter, result);
+  vec3.add(result, cameraCenter, focalVec);
+  vec3.sub(result, result, halfViewportU);
+  vec3.sub(result, result, halfViewportV);
   return result;
 }
 
@@ -75,14 +75,14 @@ export const getUpperLeft = (focalLength: number, cameraCenter: vec3, viewportU:
 export const getStartingPixel = (upperLeft: vec3, pixDeltaU: vec3, pixDeltaV: vec3) => {
   const result = vec3.create();
   vec3.add(result, pixDeltaU, pixDeltaV);
-  vec3.multiply(result, [0.5, 0.5, 0.5], result);
+  vec3.scale(result, result, 0.5);
   vec3.add(result, upperLeft, result);
   return result;
 }
 
 export const getPixelCenter = (startingPixel: vec3, col: number, row: number, pixDeltaU: vec3, pixDeltaV: vec3) => {
-  const offsetU = vec3.mul(vec3.create(), [col, col, col], pixDeltaU);
-  const offsetV = vec3.mul(vec3.create(), [row, row, row], pixDeltaV);
+  const offsetU = vec3.scale(vec3.create(), pixDeltaU, col);
+  const offsetV = vec3.scale(vec3.create(), pixDeltaV, row);
   const result = vec3.create();
   vec3.add(result, offsetU, offsetV);
   vec3.add(result, startingPixel, result);
@@ -98,8 +98,8 @@ export const rayColor = (ray: ray) => {
   const unit = vec3.normalize(vec3.create(), ray.dir);
   const a = 0.5 * (unit[1] + 1); // -1 to 1 to 0, 1
   const result = vec3.create();
-  const start = vec3.mul(vec3.create(), [1-a,1-a,1-a], [1,1,1]);
-  const end = vec3.mul(vec3.create(), [a,a,a], [0.3,0.7,1]);
+  const start = vec3.scale(vec3.create(), [1,1,1], 1-a);
+  const end = vec3.scale(vec3.create(), [0.3,0.7,1], a);
   vec3.add(result, start, end);
   return result;
 }
