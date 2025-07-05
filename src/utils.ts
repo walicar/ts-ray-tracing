@@ -1,3 +1,5 @@
+import type { vec3 } from "gl-matrix";
+
 /**
  * @param ppm file .ppm
  * @returns image in canvas format
@@ -39,3 +41,22 @@ export const createImage = (ppm: string) => {
   ctx.putImageData(imageData, 0, 0);
   return canvas;
 };
+
+
+/**
+ * appends a color triplet entry to the ppm file 
+ * @param ppm file .ppm
+ * @param color rgb color
+ */
+export const writeColor = (ppm: string, color: vec3) => {
+  const ir = color[0];
+  const ig = color[1];
+  const ib = color[3];
+
+  // Translate the [0,1] component values to the byte range [0,255].
+  const r = ir * 255;
+  const g = ig * 255;
+  const b = ib * 255;
+
+  ppm += `${r} ${g} ${b}\n`;
+}
