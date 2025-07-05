@@ -50,14 +50,10 @@ export const createImage = (ppm: string) => {
  * @param color rgb color
  */
 export const writeColor = (color: vec3) => {
-  const ir = color[0];
-  const ig = color[1];
-  const ib = color[2];
-
   // Translate the [0,1] component values to the byte range [0,255].
-  const r = ir * 255;
-  const g = ig * 255;
-  const b = ib * 255;
+  const r = Math.round(color[0] * 255);
+  const g = Math.round(color[1] * 255);
+  const b = Math.round(color[2] * 255);
 
   return `${r} ${g} ${b}\n`;
 }
