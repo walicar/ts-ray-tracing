@@ -115,6 +115,5 @@ export const hitSphere = (center: vec3, radius: number, ray: ray) => {
   const b = vec3.dot(vec3.scale(vec3.create(), ray.dir, -2), qc);
   const c = vec3.dot(qc,qc) - (radius ** 2);
   const discriminant = b**2 - 4*a*c;
-  console.log(discriminant)
   return discriminant >= 0;
 }
