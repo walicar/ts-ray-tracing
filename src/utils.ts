@@ -95,8 +95,13 @@ export const getPixelCenter = (startingPixel: vec3, col: number, row: number, pi
  * @returns 
  */
 export const rayColor = (ray: ray) => {
-  if (hitSphere(vec3.fromValues(0,0,-1), 0.5, ray)) {
-    return vec3.fromValues(1,0,0);
+  const center = vec3.fromValues(0,0,-1);
+  const t = hitSphere(center, 0.5, ray);
+
+  // map normal to from 0 to 1;
+  if (t > 0){
+    const n = vec3.normalize(vec3.create(), vec3.sub(vec3.create(), ray.at(t), center));
+    return vec3.scale(vec3.create(), vec3.fromValues(n[0]+1,n[1]+1,n[2]+1), 0.5);
   }
 
   const unit = vec3.normalize(vec3.create(), ray.dir);
@@ -108,12 +113,19 @@ export const rayColor = (ray: ray) => {
   return result;
 }
 
+/**
+ * @param center 
+ * @param radius 
+ * @param ray 
+ * @returns where on the ray do we hit the sphere
+ */
 export const hitSphere = (center: vec3, radius: number, ray: ray) => {
   // direction from ray origin to sphere center
   const qc = vec3.sub(vec3.create(), center, ray.orig);
   const a = vec3.dot(ray.dir, ray.dir);
   const b = vec3.dot(vec3.scale(vec3.create(), ray.dir, -2), qc);
   const c = vec3.dot(qc,qc) - (radius ** 2);
-  const discriminant = b**2 - 4*a*c;
-  return discriminant >= 0;
+  const discriminant = (b**2) - (4*a*c);
+  if (discriminant < 0 ) return -1.0;
+  return (-b - Math.sqrt(discriminant)) / (2*a) // - (entry point) + (exit point)
 }
