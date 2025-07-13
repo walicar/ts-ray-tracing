@@ -2,7 +2,12 @@ import { vec3 } from "gl-matrix";
 import type ray from "./ray";
 
 export default abstract class Hittable {
-    abstract hit(r: ray, tmin: number, tmax: number, hitRecord: HitRecord): boolean;
+    abstract hit(r: ray, tmin: number, tmax: number): HitResult;
+}
+
+export interface HitResult {
+    hitRecord: HitRecord,
+    isRayHitting: boolean
 }
 
 export class HitRecord {
@@ -11,7 +16,7 @@ export class HitRecord {
     t: number;
     isFrontFace: boolean;
 
-    constructor(point:vec3, normal:vec3, t:number) {
+    constructor(point:vec3 = vec3.create(), normal:vec3 = vec3.create(), t:number = 0) {
         this.point = point;
         this.normal = normal;
         this.t = t;

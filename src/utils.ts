@@ -1,5 +1,6 @@
 import { vec3 } from "gl-matrix";
 import type ray from "./ray";
+import type Hittable from "./hittable";
 
 /**
  * @param ppm file .ppm
@@ -94,16 +95,14 @@ export const getPixelCenter = (startingPixel: vec3, col: number, row: number, pi
  * @param ray 
  * @returns 
  */
-export const rayColor = (ray: ray) => {
-  const center = vec3.fromValues(0, 0, -1);
-  const t = hitSphere(center, 0.5, ray);
-
-  // map normal to from 0 to 1;
-  if (t > 0) {
-    const n = vec3.normalize(vec3.create(), vec3.sub(vec3.create(), ray.at(t), center));
+export const rayColor = (ray: ray, world: Hittable) => {
+  const { isRayHitting, hitRecord: rec } = world.hit(ray, 0, INF);
+  if (isRayHitting) {
+    const { normal: n } = rec
     return vec3.scale(vec3.create(), vec3.fromValues(n[0] + 1, n[1] + 1, n[2] + 1), 0.5);
   }
 
+  // map normal to from 0 to 1, background color;
   const unit = vec3.normalize(vec3.create(), ray.dir);
   const a = 0.5 * (unit[1] + 1); // -1 to 1 to 0, 1
   const result = vec3.create();
@@ -113,19 +112,9 @@ export const rayColor = (ray: ray) => {
   return result;
 }
 
-/**
- * @param center 
- * @param radius 
- * @param ray 
- * @returns where on the ray do we hit the sphere
- */
-export const hitSphere = (center: vec3, radius: number, ray: ray) => {
-  // direction from ray origin to sphere center
-  const qc = vec3.sub(vec3.create(), center, ray.orig);
-  const a = vec3.dot(ray.dir, ray.dir);
-  const h = vec3.dot(ray.dir, qc);
-  const c = vec3.dot(qc, qc) - (radius ** 2);
-  const discriminant = (h ** 2) - (a * c);
-  if (discriminant < 0) return -1.0;
-  return (h - Math.sqrt(discriminant)) / a // - (entry point) + (exit point)
+export const INF = Infinity
+export const PI = Math.PI
+
+export const degToRad = (deg: number) => {
+  return deg * (PI / 180);
 }

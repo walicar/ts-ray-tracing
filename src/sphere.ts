@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import Hittable, { type HitRecord } from "./hittable";
+import Hittable, { HitRecord, type HitResult } from "./hittable";
 import ray from "./ray";
 
 export default class Sphere extends Hittable {
@@ -12,7 +12,7 @@ export default class Sphere extends Hittable {
         this.radius = radius;
     }
 
-    hit(ray: ray, tmin: number, tmax: number, rec: HitRecord): boolean {
+    hit(ray: ray, tmin: number, tmax: number): HitResult {
         // direction from ray origin to sphere center
         const qc = vec3.sub(vec3.create(), this.center, ray.orig);
         const a = vec3.dot(ray.dir, ray.dir);
@@ -20,23 +20,32 @@ export default class Sphere extends Hittable {
         const c = vec3.dot(qc, qc) - (this.radius ** 2);
         const discriminant = (h ** 2) - (a * c);
 
-        if (discriminant < 0) return false;
+        if (discriminant < 0) return {
+            hitRecord: new HitRecord(),
+            isRayHitting: false
+        };
 
+        // Find the nearest root that lies in the acceptable range.
         const sqrtd = Math.sqrt(discriminant);
         let root = (h - sqrtd) / a
-        if (tmin > root || root < tmax) {
+        if (root <= tmin || tmax <= root) {
             root = (h + sqrtd) / a;
-            if (tmin > root || root < tmax) {
-                return false;
+            if (root <= tmin || tmax <= root) {
+                return {
+                    hitRecord: new HitRecord(),
+                    isRayHitting: false,
+                };
             }
         }
 
+        const rec = new HitRecord();
         rec.t = root;
         rec.point = ray.at(rec.t);
-        const outwardNormal = vec3.sub(vec3.create(), rec.point, this.center);
-        const checkNormal = vec3.sub(vec3.create(), ray.orig, this.center);
-        console.log("check if true", vec3.equals(outwardNormal, checkNormal));
+        const outwardNormal = vec3.scale(vec3.create(), vec3.sub(vec3.create(), rec.point, this.center), 1 / this.radius);
         rec.setFaceNormal(ray, outwardNormal);
-        return true;
+        return {
+            hitRecord: rec,
+            isRayHitting: true
+        };
     }
 }
