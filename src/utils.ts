@@ -1,6 +1,11 @@
 import { vec3 } from "gl-matrix";
 import type ray from "./ray";
 import type Hittable from "./hittable";
+import Interval from "./interval";
+
+export const degToRad = (deg: number) => {
+  return deg * (Math.PI / 180);
+}
 
 /**
  * @param ppm file .ppm
@@ -96,7 +101,7 @@ export const getPixelCenter = (startingPixel: vec3, col: number, row: number, pi
  * @returns 
  */
 export const rayColor = (ray: ray, world: Hittable) => {
-  const { isRayHitting, hitRecord: rec } = world.hit(ray, 0, INF);
+  const { isRayHitting, hitRecord: rec } = world.hit(ray, new Interval(0, Infinity));
   if (isRayHitting) {
     const { normal: n } = rec
     return vec3.scale(vec3.create(), vec3.fromValues(n[0] + 1, n[1] + 1, n[2] + 1), 0.5);
@@ -110,11 +115,4 @@ export const rayColor = (ray: ray, world: Hittable) => {
   const end = vec3.scale(vec3.create(), [0.3, 0.7, 1], a);
   vec3.add(result, start, end);
   return result;
-}
-
-export const INF = Infinity
-export const PI = Math.PI
-
-export const degToRad = (deg: number) => {
-  return deg * (PI / 180);
 }

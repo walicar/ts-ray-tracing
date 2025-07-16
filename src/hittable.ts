@@ -1,8 +1,9 @@
 import { vec3 } from "gl-matrix";
 import type ray from "./ray";
+import type Interval from "./interval";
 
 export default abstract class Hittable {
-    abstract hit(r: ray, tmin: number, tmax: number): HitResult;
+    abstract hit(r: ray, interval: Interval): HitResult;
 }
 
 export interface HitResult {

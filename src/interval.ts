@@ -1,15 +1,13 @@
-import { INF } from "./utils"
-
 export default class Interval {
     min: number 
     max: number
 
-    static empty: Interval = new Interval();
-    static universe: Interval = new Interval(-INF, INF);
+    static readonly empty: Interval = new Interval();
+    static readonly universe: Interval = new Interval(Infinity, -Infinity);
 
-    constructor(max: number = INF, min: number = -INF) {
-        this.max = max;
+    constructor(min: number = -Infinity, max: number = Infinity, ) {
         this.min = min;
+        this.max = max;
     }
 
     size() {

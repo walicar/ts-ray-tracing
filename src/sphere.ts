@@ -1,6 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Hittable, { HitRecord, type HitResult } from "./hittable";
 import ray from "./ray";
+import type Interval from "./interval";
 
 export default class Sphere extends Hittable {
     private center: vec3;
@@ -12,7 +13,7 @@ export default class Sphere extends Hittable {
         this.radius = radius;
     }
 
-    hit(ray: ray, tmin: number, tmax: number): HitResult {
+    hit(ray: ray, interval: Interval): HitResult {
         // direction from ray origin to sphere center
         const qc = vec3.sub(vec3.create(), this.center, ray.orig);
         const a = vec3.dot(ray.dir, ray.dir);
@@ -28,9 +29,9 @@ export default class Sphere extends Hittable {
         // Find the nearest root that lies in the acceptable range.
         const sqrtd = Math.sqrt(discriminant);
         let root = (h - sqrtd) / a
-        if (root <= tmin || tmax <= root) {
+        if (!interval.surrounds(root)) {
             root = (h + sqrtd) / a;
-            if (root <= tmin || tmax <= root) {
+            if (!interval.surrounds(root)) {
                 return {
                     hitRecord: new HitRecord(),
                     isRayHitting: false,
