@@ -1,7 +1,4 @@
 import { vec3 } from "gl-matrix";
-import type ray from "./ray";
-import type Hittable from "./hittable";
-import Interval from "./interval";
 
 export const degToRad = (deg: number) => {
   return deg * (Math.PI / 180);
@@ -107,3 +104,11 @@ export const getPixelCenter = (
   vec3.add(result, startingPixel, result);
   return result;
 };
+
+export const randomNormal = () => {
+  const [randomNum] = crypto.getRandomValues(new Uint32Array(1));
+  const MAX = 2 ** 32;
+  return randomNum / (MAX + 1);
+}
+
+export const random = (min: number, max: number) => min + (max - min) * randomNormal();
