@@ -6,6 +6,7 @@ import {
   getPixelCenter,
   getStartingPixel,
   getUpperLeft,
+  randomNormal,
   writeColor,
 } from "./utils";
 
@@ -13,27 +14,24 @@ export default class Camera {
   aspectRatio = 1; // ratio of image width over height
   imageWidth = 100; // rendered image width in pixel count
   focalLength = 1;
+  samplesPerPixel = 10 // amount of pixels to sample to anti-alias picture
   center = vec3.create(); // camera center
 
   render(world: Hittable): string {
     this.init();
+    const { imageWidth, imageHeight, samplesPerPixel, samplingScale } = this;
     // create ppm header
     let ppm = `P3\n${this.imageWidth} ${this.imageHeight}\n255\n`;
-    const { pix00Loc, pixDeltaU, pixDeltaV, center } = this;
 
     // create ppm image
-    for (let row = 0; row < this.imageHeight; row++) {
-      for (let col = 0; col < this.imageWidth; col++) {
-        const pixelCenter = getPixelCenter(
-          pix00Loc,
-          col,
-          row,
-          pixDeltaU,
-          pixDeltaV,
-        );
-        const dir = vec3.sub(vec3.create(), pixelCenter, center);
-        const r = new ray(center, dir);
-        const color = this.rayColor(r, world);
+    for (let row = 0; row < imageHeight; row++) {
+      for (let col = 0; col < imageWidth; col++) {
+        const color = vec3.create();
+        for (let sample = 0; sample < samplesPerPixel; sample++) {
+          const ray = this.getRay(col, row);
+          vec3.add(color, color, this.rayColor(ray, world));
+        }
+        vec3.scale(color, color, samplingScale);
         ppm += writeColor(color);
       }
     }
@@ -44,9 +42,11 @@ export default class Camera {
   private pix00Loc = vec3.create(); // location of pixel (0,0)
   private pixDeltaU = vec3.create(); // distance between each pixel along x axis
   private pixDeltaV = vec3.create(); // distance between each pxiel along each y axis
+  private samplingScale = 1 / this.samplesPerPixel;
 
   private init() {
     this.imageHeight = Math.floor(this.imageWidth / this.aspectRatio);
+    this.samplingScale = 1 / this.samplesPerPixel;
 
     // viewport dimensions
     const viewportHeight = 2;
@@ -99,5 +99,26 @@ export default class Camera {
     const end = vec3.scale(vec3.create(), [0.3, 0.7, 1], a);
     vec3.add(result, start, end);
     return result;
+  }
+
+  private getRay(col: number, row: number): ray {
+    const { pix00Loc, pixDeltaU, pixDeltaV, center } = this;
+    const offset = this.randomOffset();
+    const pixelCenter = getPixelCenter(
+      pix00Loc,
+      col + offset[1],
+      row + offset[0],
+      pixDeltaU,
+      pixDeltaV,
+    );
+    const dir = vec3.sub(vec3.create(), pixelCenter, center);
+    return new ray(center, dir);
+  }
+
+  /**
+   * Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+   */
+  private randomOffset() {
+    return vec3.fromValues(randomNormal() - 0.5, randomNormal() - 0.5, 0);
   }
 }

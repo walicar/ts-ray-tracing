@@ -1,4 +1,5 @@
 import { vec3 } from "gl-matrix";
+import Interval from "./interval";
 
 export const degToRad = (deg: number) => {
   return deg * (Math.PI / 180);
@@ -53,10 +54,11 @@ export const createImage = (ppm: string) => {
  */
 export const writeColor = (color: vec3) => {
   // Translate the [0,1] component values to the byte range [0,255].
-  const r = Math.round(color[0] * 255);
-  const g = Math.round(color[1] * 255);
-  const b = Math.round(color[2] * 255);
-
+  const intensity = new Interval(0, 0.99999);
+  const [rn, gn, bn] = [...color] // rgb normalized
+  const r = Math.round(intensity.clamp(rn) * 255);
+  const g = Math.round(intensity.clamp(gn) * 255);
+  const b = Math.round(intensity.clamp(bn) * 255);
   return `${r} ${g} ${b}\n`;
 };
 
