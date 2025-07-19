@@ -3,34 +3,40 @@ import type ray from "./ray";
 import type Interval from "./interval";
 
 export default abstract class Hittable {
-    abstract hit(r: ray, interval: Interval): HitResult;
+  abstract hit(r: ray, interval: Interval): HitResult;
 }
 
 export interface HitResult {
-    hitRecord: HitRecord,
-    isRayHitting: boolean
+  hitRecord: HitRecord;
+  isRayHitting: boolean;
 }
 
 export class HitRecord {
-    point: vec3;
-    normal: vec3;
-    t: number;
-    isFrontFace: boolean;
+  point: vec3;
+  normal: vec3;
+  t: number;
+  isFrontFace: boolean;
 
-    constructor(point:vec3 = vec3.create(), normal:vec3 = vec3.create(), t:number = 0) {
-        this.point = point;
-        this.normal = normal;
-        this.t = t;
-        this.isFrontFace = false;
-    }
+  constructor(
+    point: vec3 = vec3.create(),
+    normal: vec3 = vec3.create(),
+    t: number = 0,
+  ) {
+    this.point = point;
+    this.normal = normal;
+    this.t = t;
+    this.isFrontFace = false;
+  }
 
-    /**
-     * set isFrontFace and the normal
-     * @param r 
-     * @param outwardNormal 
-     */
-    setFaceNormal(r: ray, outwardNormal: vec3) {
-        this.isFrontFace = vec3.dot(r.dir, outwardNormal) < 0;
-        this.normal = this.isFrontFace ? outwardNormal : vec3.negate(vec3.create(), outwardNormal);
-    }
+  /**
+   * set isFrontFace and the normal
+   * @param r
+   * @param outwardNormal
+   */
+  setFaceNormal(r: ray, outwardNormal: vec3) {
+    this.isFrontFace = vec3.dot(r.dir, outwardNormal) < 0;
+    this.normal = this.isFrontFace
+      ? outwardNormal
+      : vec3.negate(vec3.create(), outwardNormal);
+  }
 }

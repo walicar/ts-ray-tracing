@@ -5,7 +5,7 @@ import Interval from "./interval";
 
 export const degToRad = (deg: number) => {
   return deg * (Math.PI / 180);
-}
+};
 
 /**
  * @param ppm file .ppm
@@ -49,9 +49,8 @@ export const createImage = (ppm: string) => {
   return canvas;
 };
 
-
 /**
- * appends a color triplet entry to the ppm file 
+ * appends a color triplet entry to the ppm file
  * @param ppm file .ppm
  * @param color rgb color
  */
@@ -62,10 +61,15 @@ export const writeColor = (color: vec3) => {
   const b = Math.round(color[2] * 255);
 
   return `${r} ${g} ${b}\n`;
-}
+};
 
 // calculate upper left position of the viewport
-export const getUpperLeft = (focalLength: number, cameraCenter: vec3, viewportU: vec3, viewportV: vec3) => {
+export const getUpperLeft = (
+  focalLength: number,
+  cameraCenter: vec3,
+  viewportU: vec3,
+  viewportV: vec3,
+) => {
   const focalVec = vec3.fromValues(0, 0, -focalLength);
   const halfViewportU = vec3.scale(vec3.create(), viewportU, 0.5);
   const halfViewportV = vec3.scale(vec3.create(), viewportV, 0.5);
@@ -75,44 +79,31 @@ export const getUpperLeft = (focalLength: number, cameraCenter: vec3, viewportU:
   vec3.sub(result, result, halfViewportU);
   vec3.sub(result, result, halfViewportV);
   return result;
-}
+};
 
-
-export const getStartingPixel = (upperLeft: vec3, pixDeltaU: vec3, pixDeltaV: vec3) => {
+export const getStartingPixel = (
+  upperLeft: vec3,
+  pixDeltaU: vec3,
+  pixDeltaV: vec3,
+) => {
   const result = vec3.create();
   vec3.add(result, pixDeltaU, pixDeltaV);
   vec3.scale(result, result, 0.5);
   vec3.add(result, upperLeft, result);
   return result;
-}
+};
 
-export const getPixelCenter = (startingPixel: vec3, col: number, row: number, pixDeltaU: vec3, pixDeltaV: vec3) => {
+export const getPixelCenter = (
+  startingPixel: vec3,
+  col: number,
+  row: number,
+  pixDeltaU: vec3,
+  pixDeltaV: vec3,
+) => {
   const offsetU = vec3.scale(vec3.create(), pixDeltaU, col);
   const offsetV = vec3.scale(vec3.create(), pixDeltaV, row);
   const result = vec3.create();
   vec3.add(result, offsetU, offsetV);
   vec3.add(result, startingPixel, result);
   return result;
-}
-
-/**
- * could use vec3.lerp here
- * @param ray 
- * @returns 
- */
-export const rayColor = (ray: ray, world: Hittable) => {
-  const { isRayHitting, hitRecord: rec } = world.hit(ray, new Interval(0, Infinity));
-  if (isRayHitting) {
-    const { normal: n } = rec
-    return vec3.scale(vec3.create(), vec3.fromValues(n[0] + 1, n[1] + 1, n[2] + 1), 0.5);
-  }
-
-  // map normal to from 0 to 1, background color;
-  const unit = vec3.normalize(vec3.create(), ray.dir);
-  const a = 0.5 * (unit[1] + 1); // -1 to 1 to 0, 1
-  const result = vec3.create();
-  const start = vec3.scale(vec3.create(), [1, 1, 1], 1 - a);
-  const end = vec3.scale(vec3.create(), [0.3, 0.7, 1], a);
-  vec3.add(result, start, end);
-  return result;
-}
+};
