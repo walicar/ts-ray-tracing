@@ -10,12 +10,13 @@ const root = document.querySelector("#root");
 const camera = new Camera();
 camera.aspectRatio = 16 / 9;
 camera.imageWidth = 400;
+const imageHeight = Math.floor(camera.imageWidth / camera.aspectRatio);
 
 // world
 const world = new HittableList();
 world.add(new Sphere([0, 0, -1], 0.5));
 world.add(new Sphere([0, -100.5, -1], 100));
 
-const ppm = camera.render(world);
-const image = await createImage(ppm);
+const pixels = camera.render(world);
+const image = await createImage(pixels, camera.imageWidth, imageHeight);
 root?.append(image);

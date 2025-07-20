@@ -3,11 +3,11 @@ import type Hittable from "./hittable";
 import Interval from "./interval";
 import ray from "./ray";
 import {
+  getColor,
   getPixelCenter,
   getStartingPixel,
   getUpperLeft,
   randomNormal,
-  writeColor,
 } from "./utils";
 
 export default class Camera {
@@ -17,28 +17,36 @@ export default class Camera {
   samplesPerPixel = 10 // amount of pixels to sample to anti-alias picture
   center = vec3.create(); // camera center
 
-  render(world: Hittable): string {
+  render(world: Hittable): Uint8ClampedArray {
     this.init();
     const { imageWidth, imageHeight, samplesPerPixel, samplingScale } = this;
-    // create ppm header
-    let ppm = `P3\n${this.imageWidth} ${this.imageHeight}\n255\n`;
+    const pixels = new Uint8ClampedArray(imageWidth * imageHeight * 4);
 
-    // create ppm image
+    // create image
     for (let row = 0; row < imageHeight; row++) {
       for (let col = 0; col < imageWidth; col++) {
         const color = vec3.create();
+        // anti aliasing
         for (let sample = 0; sample < samplesPerPixel; sample++) {
           const ray = this.getRay(col, row);
           vec3.add(color, color, this.rayColor(ray, world));
         }
         vec3.scale(color, color, samplingScale);
-        ppm += writeColor(color);
+
+        // write color
+        const [r, g, b] = getColor(color); // normalized color -> 0-255 range
+        const pixel = (row * imageWidth) + col;
+        const offset = pixel * 4;
+        pixels[offset] = r;
+        pixels[offset + 1] = g;
+        pixels[offset + 2] = b;
+        pixels[offset + 3] = 255;
       }
     }
-    return ppm;
+    return pixels;
   }
 
-  private imageHeight = 0; // rendered image height
+  private imageHeight = 100; // rendered image height
   private pix00Loc = vec3.create(); // location of pixel (0,0)
   private pixDeltaU = vec3.create(); // distance between each pixel along x axis
   private pixDeltaV = vec3.create(); // distance between each pxiel along each y axis
