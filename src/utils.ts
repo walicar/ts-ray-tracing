@@ -9,14 +9,7 @@ export const degToRad = (deg: number) => {
  * @param ppm file .ppm
  * @returns image in canvas format
  */
-export const createImage = async (ppm: string) => {
-  const DIMS_OFFSET = 1; // which line to get dims from .ppm
-  const TRIP_OFFSET = 3; // which line the data starts in .ppm
-
-  const entries = ppm.split("\n").filter((line) => !line.startsWith("#"));
-  const dims = entries[DIMS_OFFSET].split(" ");
-  const width = parseInt(dims[0]);
-  const height = parseInt(dims[1]);
+export const createImage = async (pixels: Uint8ClampedArray, width: number, height: number) => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("bitmaprenderer");
   if (!ctx) return canvas;
@@ -27,41 +20,21 @@ export const createImage = async (ppm: string) => {
   canvas.style.width = width.toString() + "px";
   canvas.style.height = height.toString() + "px";
 
-  // create image
-  const pixels = new Uint8ClampedArray(width * height * 4);
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      const pixelIndex = row * width + col;
-      const [r, g, b] = entries[pixelIndex + TRIP_OFFSET]
-        .trim()
-        .split(" ")
-        .map((val) => parseInt(val));
-      const offset = pixelIndex * 4;
-      pixels[offset] = r;
-      pixels[offset + 1] = g;
-      pixels[offset + 2] = b;
-      pixels[offset + 3] = 255;
-    }
-  }
+  // creating bitmap
   const imageData = new ImageData(pixels, width, height);
   const bitmap = await createImageBitmap(imageData)
   ctx.transferFromImageBitmap(bitmap)
   return canvas;
 };
 
-/**
- * appends a color triplet entry to the ppm file
- * @param ppm file .ppm
- * @param color rgb color
- */
-export const writeColor = (color: vec3) => {
+export const getColor = (color: vec3) => {
   // Translate the [0,1] component values to the byte range [0,255].
   const intensity = new Interval(0, 0.99999);
   const [rn, gn, bn] = [...color] // rgb normalized
   const r = Math.round(intensity.clamp(rn) * 255);
   const g = Math.round(intensity.clamp(gn) * 255);
   const b = Math.round(intensity.clamp(bn) * 255);
-  return `${r} ${g} ${b}\n`;
+  return [r,g,b];
 };
 
 // calculate upper left position of the viewport
