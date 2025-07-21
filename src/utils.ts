@@ -85,10 +85,10 @@ export const getPixelCenter = (
 };
 
 export const randomNormal = () => {
-  const [randomNum] = crypto.getRandomValues(new Uint32Array(1));
+  const randomNum = Math.floor(Math.random() * 2 ** 32); // simulate a uint32
   const MAX = 2 ** 32;
-  return randomNum / (MAX + 1);
-}
+  return randomNum / (MAX + 1); // match original logic
+};
 
 export const random = (min: number, max: number) => min + (max - min) * randomNormal();
 

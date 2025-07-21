@@ -17,6 +17,9 @@ const world = new HittableList();
 world.add(new Sphere([0, 0, -1], 0.5));
 world.add(new Sphere([0, -100.5, -1], 100));
 
+const start = performance.now();
 const pixels = await camera.render(world);
 const image = await createImage(pixels, camera.imageWidth, imageHeight);
 root?.append(image);
+const end = performance.now();
+console.log(end - start);
