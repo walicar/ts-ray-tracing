@@ -1,5 +1,6 @@
 import { vec3 } from "gl-matrix";
 import Interval from "./interval";
+import type Hittable from "./hittable";
 
 export const degToRad = (deg: number) => {
   return deg * (Math.PI / 180);
@@ -21,7 +22,8 @@ export const createImage = async (pixels: Uint8ClampedArray, width: number, heig
   canvas.style.height = height.toString() + "px";
 
   // creating bitmap
-  const imageData = new ImageData(pixels, width, height);
+  const copyPixels = new Uint8ClampedArray(pixels);
+  const imageData = new ImageData(copyPixels, width, height);
   const bitmap = await createImageBitmap(imageData)
   ctx.transferFromImageBitmap(bitmap)
   return canvas;
@@ -34,7 +36,7 @@ export const getColor = (color: vec3) => {
   const r = Math.round(intensity.clamp(rn) * 255);
   const g = Math.round(intensity.clamp(gn) * 255);
   const b = Math.round(intensity.clamp(bn) * 255);
-  return [r,g,b];
+  return [r, g, b];
 };
 
 // calculate upper left position of the viewport
@@ -89,3 +91,26 @@ export const randomNormal = () => {
 }
 
 export const random = (min: number, max: number) => min + (max - min) * randomNormal();
+
+
+export const randomOffset = () => {
+  return vec3.fromValues(randomNormal() - 0.5, randomNormal() - 0.5, 0);
+}
+
+export interface WorkerData {
+  id: number,
+  world: Hittable,
+  startAt: number,
+  endAt: number,
+  imageWidth: number,
+  imageHeight: number,
+  samplesPerPixel: number,
+  samplingScale: number
+  pix00Loc: vec3,
+  pixDeltaU: vec3,
+  pixDeltaV: vec3,
+  center: vec3,
+  buffer: SharedArrayBuffer
+}
+
+export const WORKER_COUNT = 16;

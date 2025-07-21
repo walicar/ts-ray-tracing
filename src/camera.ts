@@ -1,13 +1,10 @@
 import { vec3 } from "gl-matrix";
 import type Hittable from "./hittable";
-import Interval from "./interval";
-import ray from "./ray";
 import {
-  getColor,
-  getPixelCenter,
   getStartingPixel,
   getUpperLeft,
-  randomNormal,
+  WORKER_COUNT,
+  type WorkerData,
 } from "./utils";
 
 export default class Camera {
@@ -17,33 +14,58 @@ export default class Camera {
   samplesPerPixel = 10 // amount of pixels to sample to anti-alias picture
   center = vec3.create(); // camera center
 
-  render(world: Hittable): Uint8ClampedArray {
+  async render(world: Hittable): Promise<Uint8ClampedArray> {
     this.init();
-    const { imageWidth, imageHeight, samplesPerPixel, samplingScale } = this;
-    const pixels = new Uint8ClampedArray(imageWidth * imageHeight * 4);
+    const { imageWidth, imageHeight, samplesPerPixel, samplingScale,
+      pix00Loc,
+      pixDeltaU,
+      pixDeltaV,
+      center
+    } = this;
 
-    // create image
-    for (let row = 0; row < imageHeight; row++) {
-      for (let col = 0; col < imageWidth; col++) {
-        const color = vec3.create();
-        // anti aliasing
-        for (let sample = 0; sample < samplesPerPixel; sample++) {
-          const ray = this.getRay(col, row);
-          vec3.add(color, color, this.rayColor(ray, world));
-        }
-        vec3.scale(color, color, samplingScale);
+    const bytes = imageWidth * imageHeight * 4;
+    const buffer = new SharedArrayBuffer(bytes)
 
-        // write color
-        const [r, g, b] = getColor(color); // normalized color -> 0-255 range
-        const pixel = (row * imageWidth) + col;
-        const offset = pixel * 4;
-        pixels[offset] = r;
-        pixels[offset + 1] = g;
-        pixels[offset + 2] = b;
-        pixels[offset + 3] = 255;
+    const pixelsPerWorker = Math.floor((imageWidth * imageHeight) / WORKER_COUNT);
+    const overFlow = (imageWidth * imageHeight) % WORKER_COUNT;
+
+    // spawn 16 workers to calculate
+    const promises: Promise<boolean>[] = [];
+    for (let id = 0; id < WORKER_COUNT; id++) {
+      const worker = new Worker(new URL("worker.ts", import.meta.url))
+
+      // calculate what pixelIndices this worker should render
+      const startAt = id * pixelsPerWorker;
+      let endAt = startAt + pixelsPerWorker;
+      if (id === WORKER_COUNT - 1) {
+        endAt += overFlow;
       }
+
+      // send workload to worker
+      const data: WorkerData = {
+        id,
+        world,
+        startAt,
+        endAt,
+        imageWidth,
+        imageHeight,
+        samplesPerPixel,
+        samplingScale,
+        pix00Loc,
+        pixDeltaU,
+        pixDeltaV,
+        center,
+        buffer
+      }
+
+      const promise = new Promise<boolean>((res) => {
+        worker.onmessage = () => res(true);
+        worker.postMessage(data);
+      });
+      promises.push(promise);
     }
-    return pixels;
+    await Promise.all(promises);
+    return new Uint8ClampedArray(buffer);
   }
 
   private imageHeight = 100; // rendered image height
@@ -78,55 +100,5 @@ export default class Camera {
       this.pixDeltaU,
       this.pixDeltaV,
     );
-  }
-
-  /**
-   * Get color from rays in world
-   * @note could lerp here
-   * @returns color in vec3
-   */
-  private rayColor(ray: ray, world: Hittable) {
-    const { isRayHitting, hitRecord: rec } = world.hit(
-      ray,
-      new Interval(0, Infinity),
-    );
-    if (isRayHitting) {
-      const { normal: n } = rec;
-      return vec3.scale(
-        vec3.create(),
-        vec3.fromValues(n[0] + 1, n[1] + 1, n[2] + 1),
-        0.5,
-      );
-    }
-
-    // map normal to from 0 to 1, background color;
-    const unit = vec3.normalize(vec3.create(), ray.dir);
-    const a = 0.5 * (unit[1] + 1); // -1 to 1 to 0, 1
-    const result = vec3.create();
-    const start = vec3.scale(vec3.create(), [1, 1, 1], 1 - a);
-    const end = vec3.scale(vec3.create(), [0.3, 0.7, 1], a);
-    vec3.add(result, start, end);
-    return result;
-  }
-
-  private getRay(col: number, row: number): ray {
-    const { pix00Loc, pixDeltaU, pixDeltaV, center } = this;
-    const offset = this.randomOffset();
-    const pixelCenter = getPixelCenter(
-      pix00Loc,
-      col + offset[1],
-      row + offset[0],
-      pixDeltaU,
-      pixDeltaV,
-    );
-    const dir = vec3.sub(vec3.create(), pixelCenter, center);
-    return new ray(center, dir);
-  }
-
-  /**
-   * Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
-   */
-  private randomOffset() {
-    return vec3.fromValues(randomNormal() - 0.5, randomNormal() - 0.5, 0);
   }
 }
