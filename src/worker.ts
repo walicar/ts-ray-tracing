@@ -47,7 +47,6 @@ onmessage = (e) => {
 
     // write color
     const [r, g, b] = getColor(color); // normalized color -> 0-255 range
-    // const pixel = (row * imageWidth) + col;
     const offset = pixel * 4;
     pixels[offset] = r;
     pixels[offset + 1] = g;
