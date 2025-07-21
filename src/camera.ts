@@ -11,28 +11,34 @@ export default class Camera {
   aspectRatio = 1; // ratio of image width over height
   imageWidth = 100; // rendered image width in pixel count
   focalLength = 1;
-  samplesPerPixel = 10 // amount of pixels to sample to anti-alias picture
+  samplesPerPixel = 10; // amount of pixels to sample to anti-alias picture
   center = vec3.create(); // camera center
 
   async render(world: Hittable): Promise<Uint8ClampedArray> {
     this.init();
-    const { imageWidth, imageHeight, samplesPerPixel, samplingScale,
+    const {
+      imageWidth,
+      imageHeight,
+      samplesPerPixel,
+      samplingScale,
       pix00Loc,
       pixDeltaU,
       pixDeltaV,
-      center
+      center,
     } = this;
 
     const bytes = imageWidth * imageHeight * 4;
-    const buffer = new SharedArrayBuffer(bytes)
+    const buffer = new SharedArrayBuffer(bytes);
 
-    const pixelsPerWorker = Math.floor((imageWidth * imageHeight) / WORKER_COUNT);
+    const pixelsPerWorker = Math.floor(
+      (imageWidth * imageHeight) / WORKER_COUNT,
+    );
     const overFlow = (imageWidth * imageHeight) % WORKER_COUNT;
 
     // spawn 16 workers to calculate
     const promises: Promise<boolean>[] = [];
     for (let id = 0; id < WORKER_COUNT; id++) {
-      const worker = new Worker(new URL("worker.ts", import.meta.url))
+      const worker = new Worker(new URL("worker.ts", import.meta.url));
 
       // calculate what pixelIndices this worker should render
       const startAt = id * pixelsPerWorker;
@@ -55,8 +61,8 @@ export default class Camera {
         pixDeltaU,
         pixDeltaV,
         center,
-        buffer
-      }
+        buffer,
+      };
 
       const promise = new Promise<boolean>((res) => {
         worker.onmessage = () => res(true);

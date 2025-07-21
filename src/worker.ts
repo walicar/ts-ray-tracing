@@ -1,5 +1,10 @@
 import { vec3 } from "gl-matrix";
-import { getColor, getPixelCenter, randomOffset, type WorkerData } from "./utils";
+import {
+  getColor,
+  getPixelCenter,
+  randomOffset,
+  type WorkerData,
+} from "./utils";
 import Hittable from "./hittable";
 import ray from "./ray";
 import Interval from "./interval";
@@ -24,9 +29,9 @@ onmessage = (e) => {
   const world = new HittableList();
 
   for (const hittable of hittables) {
-    const [x,y,z] = hittable.center;
+    const [x, y, z] = hittable.center;
     const r = hittable.radius;
-    const c = vec3.fromValues(x,y,z);
+    const c = vec3.fromValues(x, y, z);
     world.add(new Sphere(c, r));
   }
 
@@ -56,7 +61,7 @@ onmessage = (e) => {
   }
 
   postMessage(`${id} done`);
-}
+};
 
 function getRay(data: WorkerData, col: number, row: number): ray {
   const { pix00Loc, pixDeltaU, pixDeltaV, center } = data;

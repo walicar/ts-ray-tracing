@@ -6,11 +6,11 @@ export const degToRad = (deg: number) => {
   return deg * (Math.PI / 180);
 };
 
-/**
- * @param ppm file .ppm
- * @returns image in canvas format
- */
-export const createImage = async (pixels: Uint8ClampedArray, width: number, height: number) => {
+export const createImage = async (
+  pixels: Uint8ClampedArray,
+  width: number,
+  height: number,
+) => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("bitmaprenderer");
   if (!ctx) return canvas;
@@ -24,15 +24,15 @@ export const createImage = async (pixels: Uint8ClampedArray, width: number, heig
   // creating bitmap
   const copyPixels = new Uint8ClampedArray(pixels);
   const imageData = new ImageData(copyPixels, width, height);
-  const bitmap = await createImageBitmap(imageData)
-  ctx.transferFromImageBitmap(bitmap)
+  const bitmap = await createImageBitmap(imageData);
+  ctx.transferFromImageBitmap(bitmap);
   return canvas;
 };
 
 export const getColor = (color: vec3) => {
   // Translate the [0,1] component values to the byte range [0,255].
   const intensity = new Interval(0, 0.99999);
-  const [rn, gn, bn] = [...color] // rgb normalized
+  const [rn, gn, bn] = [...color]; // rgb normalized
   const r = Math.round(intensity.clamp(rn) * 255);
   const g = Math.round(intensity.clamp(gn) * 255);
   const b = Math.round(intensity.clamp(bn) * 255);
@@ -85,32 +85,32 @@ export const getPixelCenter = (
 };
 
 export const randomNormal = () => {
-  const randomNum = Math.floor(Math.random() * 2 ** 32); // simulate a uint32
+  const randomNum = Math.floor(Math.random() * 2 ** 32);
   const MAX = 2 ** 32;
-  return randomNum / (MAX + 1); // match original logic
+  return randomNum / (MAX + 1);
 };
 
-export const random = (min: number, max: number) => min + (max - min) * randomNormal();
-
+export const random = (min: number, max: number) =>
+  min + (max - min) * randomNormal();
 
 export const randomOffset = () => {
   return vec3.fromValues(randomNormal() - 0.5, randomNormal() - 0.5, 0);
-}
+};
 
 export interface WorkerData {
-  id: number,
-  world: Hittable,
-  startAt: number,
-  endAt: number,
-  imageWidth: number,
-  imageHeight: number,
-  samplesPerPixel: number,
-  samplingScale: number
-  pix00Loc: vec3,
-  pixDeltaU: vec3,
-  pixDeltaV: vec3,
-  center: vec3,
-  buffer: SharedArrayBuffer
+  id: number;
+  world: Hittable;
+  startAt: number;
+  endAt: number;
+  imageWidth: number;
+  imageHeight: number;
+  samplesPerPixel: number;
+  samplingScale: number;
+  pix00Loc: vec3;
+  pixDeltaU: vec3;
+  pixDeltaV: vec3;
+  center: vec3;
+  buffer: SharedArrayBuffer;
 }
 
 export const WORKER_COUNT = 16;

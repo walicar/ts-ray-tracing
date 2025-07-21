@@ -23,8 +23,8 @@ export default class Interval {
   }
 
   clamp(x: number) {
-    if (x<this.min) return this.min;
-    if (x>this.max) return this.max;
+    if (x < this.min) return this.min;
+    if (x > this.max) return this.max;
     return x;
   }
 }
