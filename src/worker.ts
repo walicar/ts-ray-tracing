@@ -19,7 +19,8 @@ onmessage = (e) => {
   } = data;
 
   // convert serialized object to HittableList
-  const hittables = data.world.hittables as any;
+  const serializedWorld = data.world as HittableList;
+  const hittables = serializedWorld.hittables as any;
   const world = new HittableList();
 
   for (const hittable of hittables) {
