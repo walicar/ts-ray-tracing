@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import Hittable, { HitRecord, type HitResult } from "./hittable";
-import ray from "./ray";
+import Ray from "./ray";
 import type Interval from "./interval";
 
 export default class Sphere extends Hittable {
@@ -13,7 +13,7 @@ export default class Sphere extends Hittable {
     this.radius = radius;
   }
 
-  hit(ray: ray, interval: Interval): HitResult {
+  hit(ray: Ray, interval: Interval): HitResult {
     // direction from ray origin to sphere center
     const qc = vec3.sub(vec3.create(), this.center, ray.orig);
     const a = vec3.dot(ray.dir, ray.dir);

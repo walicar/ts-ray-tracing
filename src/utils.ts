@@ -97,6 +97,25 @@ export const randomOffset = () => {
   return vec3.fromValues(randomNormal() - 0.5, randomNormal() - 0.5, 0);
 };
 
+export const randomNormalVec = () =>
+  vec3.fromValues(randomNormal(), randomNormal(), randomNormal());
+
+export const randomVec = (min: number, max: number) =>
+  vec3.fromValues(random(min, max), random(min, max), random(min, max));
+
+export const randomUnitVec = () => {
+  while (true) {
+    const p = randomVec(-1, 1);
+    const lenSq = vec3.squaredLength(p);
+    if (1e-8 < lenSq && lenSq <= 1) return vec3.normalize(vec3.create(), p);
+  }
+};
+
+export const randomUnitVecHemisphere = (normal: vec3) => {
+  const dir = randomUnitVec();
+  return vec3.dot(dir, normal) > 0 ? dir : vec3.negate(vec3.create(), dir);
+};
+
 export interface WorkerData {
   id: number;
   world: Hittable;
@@ -106,6 +125,7 @@ export interface WorkerData {
   imageHeight: number;
   samplesPerPixel: number;
   samplingScale: number;
+  maxDepth: number;
   pix00Loc: vec3;
   pixDeltaU: vec3;
   pixDeltaV: vec3;

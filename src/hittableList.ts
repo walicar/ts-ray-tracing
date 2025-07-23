@@ -1,6 +1,6 @@
 import Hittable, { HitRecord, type HitResult } from "./hittable";
 import Interval from "./interval";
-import type ray from "./ray";
+import type Ray from "./ray";
 
 export default class HittableList extends Hittable {
   hittables: Hittable[];
@@ -14,7 +14,7 @@ export default class HittableList extends Hittable {
     this.hittables.push(hittable);
   }
 
-  hit(r: ray, interval: Interval): HitResult {
+  hit(r: Ray, interval: Interval): HitResult {
     let hitRecord = new HitRecord();
     let isRayHitting = false; // is ray hitting any hittable
     let closestHit = interval.max; // track closest hit to draw closest object

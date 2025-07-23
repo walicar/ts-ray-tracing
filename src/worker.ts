@@ -3,10 +3,11 @@ import {
   getColor,
   getPixelCenter,
   randomOffset,
+  randomUnitVecHemisphere,
   type WorkerData,
 } from "./utils";
 import Hittable from "./hittable";
-import ray from "./ray";
+import Ray from "./ray";
 import Interval from "./interval";
 import HittableList from "./hittableList";
 import Sphere from "./sphere";
@@ -20,9 +21,9 @@ onmessage = (e) => {
     imageWidth,
     samplesPerPixel,
     samplingScale,
+    maxDepth,
     buffer,
   } = data;
-
   // convert serialized object to HittableList
   const serializedWorld = data.world as HittableList;
   const hittables = serializedWorld.hittables as any;
@@ -46,7 +47,7 @@ onmessage = (e) => {
     // anti aliasing
     for (let sample = 0; sample < samplesPerPixel; sample++) {
       const ray = getRay(data, col, row);
-      vec3.add(color, color, rayColor(ray, world));
+      vec3.add(color, color, rayColor(ray, world, maxDepth));
     }
     vec3.scale(color, color, samplingScale);
 
@@ -63,7 +64,7 @@ onmessage = (e) => {
   postMessage(`${id} done`);
 };
 
-function getRay(data: WorkerData, col: number, row: number): ray {
+function getRay(data: WorkerData, col: number, row: number): Ray {
   const { pix00Loc, pixDeltaU, pixDeltaV, center } = data;
   const offset = randomOffset();
   const pixelCenter = getPixelCenter(
@@ -74,20 +75,23 @@ function getRay(data: WorkerData, col: number, row: number): ray {
     pixDeltaV,
   );
   const dir = vec3.sub(vec3.create(), pixelCenter, center);
-  return new ray(center, dir);
+  return new Ray(center, dir);
 }
 
-function rayColor(ray: ray, world: Hittable) {
+function rayColor(ray: Ray, world: Hittable, depth: number): vec3 {
+  if (depth < 0) return vec3.create();
+
   const { isRayHitting, hitRecord: rec } = world.hit(
     ray,
-    new Interval(0, Infinity),
+    new Interval(0.001, Infinity),
   );
 
   if (isRayHitting) {
-    const { normal: n } = rec;
+    const { normal: n, point: p } = rec;
+    const diffuse = randomUnitVecHemisphere(n); // diffuse direction
     return vec3.scale(
       vec3.create(),
-      vec3.fromValues(n[0] + 1, n[1] + 1, n[2] + 1),
+      rayColor(new Ray(p, diffuse), world, depth - 1),
       0.5,
     );
   }

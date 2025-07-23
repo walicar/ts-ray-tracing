@@ -11,7 +11,8 @@ export default class Camera {
   aspectRatio = 1; // ratio of image width over height
   imageWidth = 100; // rendered image width in pixel count
   focalLength = 1;
-  samplesPerPixel = 10; // amount of pixels to sample to anti-alias picture
+  samplesPerPixel = 50; // amount of pixels to sample to anti-alias picture
+  maxDepth = 10;
   center = vec3.create(); // camera center
 
   async render(world: Hittable): Promise<Uint8ClampedArray> {
@@ -19,6 +20,7 @@ export default class Camera {
     const {
       imageWidth,
       imageHeight,
+      maxDepth,
       samplesPerPixel,
       samplingScale,
       pix00Loc,
@@ -60,6 +62,7 @@ export default class Camera {
         pix00Loc,
         pixDeltaU,
         pixDeltaV,
+        maxDepth,
         center,
         buffer,
       };

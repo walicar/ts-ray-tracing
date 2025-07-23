@@ -1,9 +1,9 @@
 import { vec3 } from "gl-matrix";
-import type ray from "./ray";
+import type Ray from "./ray";
 import type Interval from "./interval";
 
 export default abstract class Hittable {
-  abstract hit(r: ray, interval: Interval): HitResult;
+  abstract hit(r: Ray, interval: Interval): HitResult;
 }
 
 export interface HitResult {
@@ -33,7 +33,7 @@ export class HitRecord {
    * @param r
    * @param outwardNormal
    */
-  setFaceNormal(r: ray, outwardNormal: vec3) {
+  setFaceNormal(r: Ray, outwardNormal: vec3) {
     this.isFrontFace = vec3.dot(r.dir, outwardNormal) < 0;
     this.normal = this.isFrontFace
       ? outwardNormal
