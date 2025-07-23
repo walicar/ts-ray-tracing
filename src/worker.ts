@@ -40,8 +40,8 @@ onmessage = (e) => {
     const a = vec3.fromValues(r, g, b);
     let m = new Lambertian(a);
     if (t === "metal") {
-      m = new Metal(a)
-    };
+      m = new Metal(a);
+    }
 
     const rad = hittable.radius;
     const c = vec3.fromValues(x, y, z);

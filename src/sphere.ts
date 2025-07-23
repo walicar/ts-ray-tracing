@@ -8,9 +8,13 @@ import Lambertian from "./materials/lambertian";
 export default class Sphere extends Hittable {
   center: vec3;
   radius: number;
-  material: Material
+  material: Material;
 
-  constructor(center: vec3, radius: number, material: Material = new Lambertian()) {
+  constructor(
+    center: vec3,
+    radius: number,
+    material: Material = new Lambertian(),
+  ) {
     super();
     this.center = center;
     this.radius = radius;
