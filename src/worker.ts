@@ -3,7 +3,6 @@ import {
   getColor,
   getPixelCenter,
   randomOffset,
-  randomUnitVec,
   type WorkerData,
 } from "./utils";
 import Hittable from "./hittable";
@@ -11,6 +10,8 @@ import Ray from "./ray";
 import Interval from "./interval";
 import HittableList from "./hittableList";
 import Sphere from "./sphere";
+import Metal from "./materials/metal";
+import Lambertian from "./materials/lambertian";
 
 onmessage = (e) => {
   const data = e.data as WorkerData;
@@ -24,16 +25,27 @@ onmessage = (e) => {
     maxDepth,
     buffer,
   } = data;
+
   // convert serialized object to HittableList
   const serializedWorld = data.world as HittableList;
   const hittables = serializedWorld.hittables as any;
   const world = new HittableList();
 
+  // reconstruct sphere objects due to inability to pass class instances
+  // through workers
   for (const hittable of hittables) {
     const [x, y, z] = hittable.center;
-    const r = hittable.radius;
+    const [r, g, b] = hittable.material.albedo;
+    const t = hittable.material.tag;
+    const a = vec3.fromValues(r, g, b);
+    let m = new Lambertian(a);
+    if (t === "metal") {
+      m = new Metal(a)
+    };
+
+    const rad = hittable.radius;
     const c = vec3.fromValues(x, y, z);
-    world.add(new Sphere(c, r));
+    world.add(new Sphere(c, rad, m));
   }
 
   const pixels = new Uint8ClampedArray(buffer);
@@ -87,12 +99,11 @@ function rayColor(ray: Ray, world: Hittable, depth: number): vec3 {
   );
 
   if (isRayHitting) {
-    const { normal: n, point: p } = rec;
-    const diffuse = vec3.add(vec3.create(), n, randomUnitVec());
-    return vec3.scale(
+    const { attenuation, scattered } = rec.material.scatter(ray, rec);
+    return vec3.mul(
       vec3.create(),
-      rayColor(new Ray(p, diffuse), world, depth - 1),
-      0.5,
+      rayColor(scattered, world, depth - 1),
+      attenuation,
     );
   }
 

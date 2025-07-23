@@ -2,15 +2,19 @@ import { vec3 } from "gl-matrix";
 import Hittable, { HitRecord, type HitResult } from "./hittable";
 import Ray from "./ray";
 import type Interval from "./interval";
+import type Material from "./materials/material";
+import Lambertian from "./materials/lambertian";
 
 export default class Sphere extends Hittable {
-  private center: vec3;
-  private radius: number;
+  center: vec3;
+  radius: number;
+  material: Material
 
-  constructor(center: vec3, radius: number) {
+  constructor(center: vec3, radius: number, material: Material = new Lambertian()) {
     super();
     this.center = center;
     this.radius = radius;
+    this.material = material;
   }
 
   hit(ray: Ray, interval: Interval): HitResult {
@@ -43,6 +47,7 @@ export default class Sphere extends Hittable {
     const rec = new HitRecord();
     rec.t = root;
     rec.point = ray.at(rec.t);
+    rec.material = this.material;
     const outwardNormal = vec3.scale(
       vec3.create(),
       vec3.sub(vec3.create(), rec.point, this.center),

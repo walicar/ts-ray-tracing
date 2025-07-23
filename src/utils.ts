@@ -30,9 +30,15 @@ export const createImage = async (
 };
 
 export const getColor = (color: vec3) => {
-  // Translate the [0,1] component values to the byte range [0,255].
   const intensity = new Interval(0, 0.99999);
-  const [rn, gn, bn] = [...color]; // rgb normalized
+  let [rn, gn, bn] = [...color]; // rgb normalized
+
+  // apply gamma function
+  rn = linearToGamma(rn);
+  gn = linearToGamma(gn);
+  bn = linearToGamma(bn);
+
+  // Translate the [0,1] component values to the byte range [0,255].
   const r = Math.round(intensity.clamp(rn) * 255);
   const g = Math.round(intensity.clamp(gn) * 255);
   const b = Math.round(intensity.clamp(bn) * 255);
@@ -131,6 +137,27 @@ export interface WorkerData {
   pixDeltaV: vec3;
   center: vec3;
   buffer: SharedArrayBuffer;
+}
+
+export const linearToGamma = (comp:number) => {
+  if (comp > 0) {
+    return Math.sqrt(comp);
+  }
+  return 0;
+}
+
+export const nearZero = (vec: vec3) => {
+  const s = 1e-8;
+  let [x,y,z] = vec.map((comp) => Math.abs(comp));
+  return x < s && y < s && z < s;
+}
+
+
+// v - 2*dot(v,n)*n;
+export const reflect = (v: vec3, n: vec3) => {
+  const s = 2 * vec3.dot(v, n);
+  const b = vec3.scale(vec3.create(), n, s);
+  return vec3.sub(vec3.create(), v, b);
 }
 
 export const WORKER_COUNT = 16;

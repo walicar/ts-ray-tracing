@@ -1,6 +1,8 @@
 import { vec3 } from "gl-matrix";
 import type Ray from "./ray";
 import type Interval from "./interval";
+import type Material from "./materials/material";
+import Lambertian from "./materials/lambertian";
 
 export default abstract class Hittable {
   abstract hit(r: Ray, interval: Interval): HitResult;
@@ -14,6 +16,7 @@ export interface HitResult {
 export class HitRecord {
   point: vec3;
   normal: vec3;
+  material: Material = new Lambertian();
   t: number;
   isFrontFace: boolean;
 
