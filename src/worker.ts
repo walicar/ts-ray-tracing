@@ -3,7 +3,7 @@ import {
   getColor,
   getPixelCenter,
   randomOffset,
-  randomUnitVecHemisphere,
+  randomUnitVec,
   type WorkerData,
 } from "./utils";
 import Hittable from "./hittable";
@@ -88,7 +88,7 @@ function rayColor(ray: Ray, world: Hittable, depth: number): vec3 {
 
   if (isRayHitting) {
     const { normal: n, point: p } = rec;
-    const diffuse = randomUnitVecHemisphere(n); // diffuse direction
+    const diffuse = vec3.add(vec3.create(), n, randomUnitVec());
     return vec3.scale(
       vec3.create(),
       rayColor(new Ray(p, diffuse), world, depth - 1),
