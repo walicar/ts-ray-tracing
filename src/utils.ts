@@ -159,4 +159,21 @@ export const reflect = (v: vec3, n: vec3) => {
   return vec3.sub(vec3.create(), v, b);
 };
 
+export const refract = (uv: vec3, n: vec3, etaiOverEtat: number)  => {
+  const negUv = vec3.negate(vec3.create(), uv);
+  const cosTheta =  Math.min(vec3.dot(negUv, n), 1);
+
+  // R perpendicular
+  const rPerp = vec3.create();
+  vec3.scale(rPerp, n, cosTheta);
+  vec3.add(rPerp, rPerp, uv);
+  vec3.scale(rPerp, rPerp, etaiOverEtat);
+
+  // R parallel
+  const rPara = vec3.create();
+  const scalar = -Math.sqrt(Math.abs(1 - vec3.dot(rPerp, rPerp)));
+  vec3.scale(rPara, n, scalar);
+  return vec3.add(vec3.create(), rPerp, rPara);
+}
+
 export const WORKER_COUNT = 16;

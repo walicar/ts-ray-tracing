@@ -10,4 +10,5 @@ export default abstract class Material {
 export interface ScatterResult {
   attenuation: vec3; // light reduction
   scattered: Ray;
+  isScattering: boolean;
 }

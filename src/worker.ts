@@ -12,6 +12,7 @@ import HittableList from "./hittableList";
 import Sphere from "./sphere";
 import Metal from "./materials/metal";
 import Lambertian from "./materials/lambertian";
+import Dielectric from "./materials/dielectric";
 
 onmessage = (e) => {
   const data = e.data as WorkerData;
@@ -35,12 +36,17 @@ onmessage = (e) => {
   // through workers
   for (const hittable of hittables) {
     const [x, y, z] = hittable.center;
-    const [r, g, b] = hittable.material.albedo;
     const t = hittable.material.tag;
-    const a = vec3.fromValues(r, g, b);
-    let m = new Lambertian(a);
+    let m: any = new Lambertian([0.5,0.5,0.5]);
     if (t === "metal") {
-      m = new Metal(a);
+      const [r, g, b] = hittable.material.albedo;
+      const a = vec3.fromValues(r, g, b);
+      m = new Metal(a, hittable.material.fuzz);
+    } else if ( t === "dielectric") {
+      m = new Dielectric(hittable.material.refractionIndex);
+    } else {
+      const [r, g, b] = hittable.material.albedo;
+      m = new Lambertian([r,g,b]);
     }
 
     const rad = hittable.radius;
@@ -99,12 +105,16 @@ function rayColor(ray: Ray, world: Hittable, depth: number): vec3 {
   );
 
   if (isRayHitting) {
-    const { attenuation, scattered } = rec.material.scatter(ray, rec);
-    return vec3.mul(
-      vec3.create(),
-      rayColor(scattered, world, depth - 1),
-      attenuation,
-    );
+    const { attenuation, scattered, isScattering } = rec.material.scatter(ray, rec);
+    if (isScattering) {
+      return vec3.mul(
+        vec3.create(),
+        rayColor(scattered, world, depth - 1),
+        attenuation,
+      );
+    } else {
+      return vec3.create();
+    }
   }
 
   // map normal to from 0 to 1, background color;
