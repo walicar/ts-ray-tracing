@@ -18,13 +18,12 @@ onmessage = (e) => {
   const data = e.data as WorkerData;
   const {
     id,
-    startAt,
-    endAt,
     imageWidth,
     samplesPerPixel,
     samplingScale,
     maxDepth,
-    buffer,
+    atomicBuffer,
+    pixelBuffer,
   } = data;
 
   // convert serialized object to HittableList
@@ -54,10 +53,14 @@ onmessage = (e) => {
     world.add(new Sphere(c, rad, m));
   }
 
-  const pixels = new Uint8ClampedArray(buffer);
-  let pixel = startAt;
+  const pixels = new Uint8ClampedArray(pixelBuffer);
+  const atomic = new Int32Array(atomicBuffer);
 
-  while (pixel < endAt) {
+  while (true) {
+    // calculate ray
+    const pixel = Atomics.sub(atomic, 0, 1);
+    if (pixel < 0) break;
+
     const color = vec3.create();
     const row = Math.floor(pixel / imageWidth);
     const col = pixel % imageWidth;
@@ -76,7 +79,6 @@ onmessage = (e) => {
     pixels[offset + 1] = g;
     pixels[offset + 2] = b;
     pixels[offset + 3] = 255;
-    pixel += 1;
   }
 
   postMessage(`${id} done`);
