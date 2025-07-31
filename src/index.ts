@@ -19,7 +19,7 @@ const imageHeight = Math.floor(camera.imageWidth / camera.aspectRatio);
 const ground = new Lambertian([0.8, 0.8, 0]);
 const center = new Lambertian([0.1, 0.2, 0.5]);
 const left = new Dielectric(1.5);
-const bubble = new Dielectric(1/1.5);
+const bubble = new Dielectric(1 / 1.5);
 const right = new Metal([0.8, 0.6, 0.2], 1.0);
 
 // world

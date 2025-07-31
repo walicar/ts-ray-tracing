@@ -25,7 +25,7 @@ export default class Lambertian extends Material {
     return {
       scattered: new Ray(point, scatterDir),
       attenuation: this.albedo,
-      isScattering: true
+      isScattering: true,
     };
   }
 }

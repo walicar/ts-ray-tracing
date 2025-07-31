@@ -15,15 +15,16 @@ export default class Dielectric extends Material {
 
   scatter(ray: Ray, hitRecord: HitRecord): ScatterResult {
     const { normal, point, isFrontFace } = hitRecord;
-    const ri = isFrontFace ? (1 / this.refractionIndex) : this.refractionIndex;
+    const ri = isFrontFace ? 1 / this.refractionIndex : this.refractionIndex;
 
     const normDir = vec3.normalize(vec3.create(), ray.dir);
     const negNormDir = vec3.negate(vec3.create(), normDir);
     const cosTheta = Math.min(vec3.dot(negNormDir, normal), 1);
-    const sinTheta = Math.sqrt(1.0 - cosTheta**2);
+    const sinTheta = Math.sqrt(1.0 - cosTheta ** 2);
 
-    const cannotRefract =  ri * sinTheta > 1.0;
-    const shouldReflect = Dielectric.reflectance(cosTheta, this.refractionIndex) > randomNormal();
+    const cannotRefract = ri * sinTheta > 1.0;
+    const shouldReflect =
+      Dielectric.reflectance(cosTheta, this.refractionIndex) > randomNormal();
     let scatterDir = vec3.create();
 
     if (cannotRefract || shouldReflect) {
@@ -35,14 +36,14 @@ export default class Dielectric extends Material {
     return {
       scattered: new Ray(point, scatterDir),
       attenuation: vec3.fromValues(1, 1, 1),
-      isScattering: true
+      isScattering: true,
     };
   }
 
   // Schlick's approximation for reflectance
   static reflectance(cosine: number, refractionIndex: number) {
-    let r0 = (1-refractionIndex) / (1+refractionIndex);
+    let r0 = (1 - refractionIndex) / (1 + refractionIndex);
     r0 *= r0;
-    return r0 + (1-r0)*Math.pow(1-cosine, 5);
+    return r0 + (1 - r0) * Math.pow(1 - cosine, 5);
   }
 }

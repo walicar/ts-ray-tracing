@@ -21,7 +21,7 @@ export default class Metal extends Material {
     const fuzzOffset = vec3.scale(vec3.create(), randomUnitVec(), this.fuzz);
     const reflectedNorm = vec3.normalize(vec3.create(), reflectedDir);
     vec3.add(reflectedDir, fuzzOffset, reflectedNorm);
-    const scattered =  new Ray(point, reflectedDir);
+    const scattered = new Ray(point, reflectedDir);
     return {
       scattered,
       attenuation: this.albedo,
