@@ -30,31 +30,22 @@ export default class Camera {
     } = this;
 
     const bytes = imageWidth * imageHeight * 4;
-    const buffer = new SharedArrayBuffer(bytes);
+    const pixelBuffer = new SharedArrayBuffer(bytes);
 
-    const pixelsPerWorker = Math.floor(
-      (imageWidth * imageHeight) / WORKER_COUNT,
-    );
-    const overFlow = (imageWidth * imageHeight) % WORKER_COUNT;
+    // set up atomic counter
+    const atomicBuffer = new SharedArrayBuffer(4);
+    const atomic = new Int32Array(atomicBuffer); // 32 bit atomic
+    Atomics.store(atomic, 0, imageWidth * imageHeight);
 
     // spawn 16 workers to calculate
     const promises: Promise<boolean>[] = [];
     for (let id = 0; id < WORKER_COUNT; id++) {
       const worker = new Worker(new URL("worker.ts", import.meta.url));
 
-      // calculate what pixelIndices this worker should render
-      const startAt = id * pixelsPerWorker;
-      let endAt = startAt + pixelsPerWorker;
-      if (id === WORKER_COUNT - 1) {
-        endAt += overFlow;
-      }
-
       // send workload to worker
       const data: WorkerData = {
         id,
         world,
-        startAt,
-        endAt,
         imageWidth,
         imageHeight,
         samplesPerPixel,
@@ -64,7 +55,8 @@ export default class Camera {
         pixDeltaV,
         maxDepth,
         center,
-        buffer,
+        atomicBuffer,
+        pixelBuffer,
       };
 
       const promise = new Promise<boolean>((res) => {
@@ -74,7 +66,7 @@ export default class Camera {
       promises.push(promise);
     }
     await Promise.all(promises);
-    return new Uint8ClampedArray(buffer);
+    return new Uint8ClampedArray(pixelBuffer);
   }
 
   private imageHeight = 100; // rendered image height

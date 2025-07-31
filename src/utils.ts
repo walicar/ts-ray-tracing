@@ -125,8 +125,6 @@ export const randomUnitVecHemisphere = (normal: vec3) => {
 export interface WorkerData {
   id: number;
   world: Hittable;
-  startAt: number;
-  endAt: number;
   imageWidth: number;
   imageHeight: number;
   samplesPerPixel: number;
@@ -136,7 +134,8 @@ export interface WorkerData {
   pixDeltaU: vec3;
   pixDeltaV: vec3;
   center: vec3;
-  buffer: SharedArrayBuffer;
+  atomicBuffer: SharedArrayBuffer;
+  pixelBuffer: SharedArrayBuffer;
 }
 
 export const linearToGamma = (comp: number) => {
