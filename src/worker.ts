@@ -36,16 +36,16 @@ onmessage = (e) => {
   for (const hittable of hittables) {
     const [x, y, z] = hittable.center;
     const t = hittable.material.tag;
-    let m: any = new Lambertian([0.5,0.5,0.5]);
+    let m: any = new Lambertian([0.5, 0.5, 0.5]);
     if (t === "metal") {
       const [r, g, b] = hittable.material.albedo;
       const a = vec3.fromValues(r, g, b);
       m = new Metal(a, hittable.material.fuzz);
-    } else if ( t === "dielectric") {
+    } else if (t === "dielectric") {
       m = new Dielectric(hittable.material.refractionIndex);
     } else {
       const [r, g, b] = hittable.material.albedo;
-      m = new Lambertian([r,g,b]);
+      m = new Lambertian([r, g, b]);
     }
 
     const rad = hittable.radius;
@@ -107,7 +107,10 @@ function rayColor(ray: Ray, world: Hittable, depth: number): vec3 {
   );
 
   if (isRayHitting) {
-    const { attenuation, scattered, isScattering } = rec.material.scatter(ray, rec);
+    const { attenuation, scattered, isScattering } = rec.material.scatter(
+      ray,
+      rec,
+    );
     if (isScattering) {
       return vec3.mul(
         vec3.create(),

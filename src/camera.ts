@@ -35,7 +35,7 @@ export default class Camera {
     // set up atomic counter
     const atomicBuffer = new SharedArrayBuffer(4);
     const atomic = new Int32Array(atomicBuffer); // 32 bit atomic
-    Atomics.store(atomic, 0, imageWidth*imageHeight);
+    Atomics.store(atomic, 0, imageWidth * imageHeight);
 
     // spawn 16 workers to calculate
     const promises: Promise<boolean>[] = [];
@@ -56,7 +56,7 @@ export default class Camera {
         maxDepth,
         center,
         atomicBuffer,
-        pixelBuffer
+        pixelBuffer,
       };
 
       const promise = new Promise<boolean>((res) => {
