@@ -18,6 +18,7 @@ export default class Camera {
   lookat = vec3.fromValues(0, 0, -1);
   up = vec3.fromValues(0, 1, 0);
   center = vec3.create(); // camera center
+  workerCount = WORKER_COUNT
 
   async render(world: Hittable): Promise<Uint8ClampedArray> {
     this.init();
@@ -31,7 +32,7 @@ export default class Camera {
 
     // spawn 16 workers to calculate
     const promises: Promise<boolean>[] = [];
-    for (let id = 0; id < WORKER_COUNT; id++) {
+    for (let id = 0; id < this.workerCount; id++) {
       const worker = new Worker(new URL("worker.ts", import.meta.url));
 
       // send workload to worker
