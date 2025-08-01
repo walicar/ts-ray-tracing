@@ -1,6 +1,7 @@
 import { vec3 } from "gl-matrix";
 import type Hittable from "./hittable";
 import {
+  degToRad,
   getStartingPixel,
   getUpperLeft,
   WORKER_COUNT,
@@ -13,6 +14,7 @@ export default class Camera {
   focalLength = 1;
   samplesPerPixel = 50; // amount of pixels to sample to anti-alias picture
   maxDepth = 10;
+  fov = 90;
   center = vec3.create(); // camera center
 
   async render(world: Hittable): Promise<Uint8ClampedArray> {
@@ -80,7 +82,9 @@ export default class Camera {
     this.samplingScale = 1 / this.samplesPerPixel;
 
     // viewport dimensions
-    const viewportHeight = 2;
+    const theta = degToRad(this.fov);
+    const h = Math.tan(theta / 2);
+    const viewportHeight = 2 * h * this.focalLength;
     const viewportWidth = viewportHeight * (this.imageWidth / this.imageHeight);
 
     // viewport vectors
