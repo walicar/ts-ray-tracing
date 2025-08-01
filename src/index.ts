@@ -12,7 +12,10 @@ const root = document.querySelector("#root");
 // add camera
 const camera = new Camera();
 camera.aspectRatio = 16 / 9;
-camera.imageWidth = 400;
+camera.imageWidth = 800;
+camera.fov = 30;
+camera.lookfrom = [-2,2,1];
+camera.lookat = [0,0,-1];
 const imageHeight = Math.floor(camera.imageWidth / camera.aspectRatio);
 
 // materials

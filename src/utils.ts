@@ -48,16 +48,17 @@ export const getColor = (color: vec3) => {
 // calculate upper left position of the viewport
 export const getUpperLeft = (
   focalLength: number,
+  w: vec3,
   cameraCenter: vec3,
   viewportU: vec3,
   viewportV: vec3,
 ) => {
-  const focalVec = vec3.fromValues(0, 0, -focalLength);
+  const focalVec = vec3.scale(vec3.create(), w, focalLength);
   const halfViewportU = vec3.scale(vec3.create(), viewportU, 0.5);
   const halfViewportV = vec3.scale(vec3.create(), viewportV, 0.5);
 
   const result = vec3.create();
-  vec3.add(result, cameraCenter, focalVec);
+  vec3.sub(result, cameraCenter, focalVec);
   vec3.sub(result, result, halfViewportU);
   vec3.sub(result, result, halfViewportV);
   return result;
